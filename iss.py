@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-__author__ = 'Diarte Jeffcoat w/help from Kyle Negley & Randy Charity'
+__author__ = 'Diarte Jeffcoat w/help from Kyle Negley, Randy Charity Jr, and RaspberryPi.org("https://projects.raspberrypi.org/en/projects/where-is-the-space-station/5")'
 
 import turtle
 import requests
+import time
 
 
 def get_iss_people():
@@ -11,12 +12,13 @@ def get_iss_people():
     print(
         f'Number of Occupants: {link["number"]}')
     for x in link["people"]:
-        print(x["craft"], x["name"])
+        print(f"{x['name']} is on board the {x['craft']}")
 
 
 def get_iss_location():
     current_loc = []
-    location = requests.get('http://api.open-notify.org/iss-now.json').json()
+    location = requests.get(
+        'http://api.open-notify.org/iss-now.json').json()
     latitude = location["iss_position"]["latitude"]
     longitude = location["iss_position"]["longitude"]
     timestamp = location["timestamp"]
@@ -27,27 +29,48 @@ def get_iss_location():
 
 
 def get_iss_position():
-    lat, lng = get_iss_location()
-    iss_map = turtle.Screen()
-    iss_map.bgpic("map.gif")
-    iss_map.setup(800, 600)
-    iss_map.setworldcoordinates(-180, -90, 180, 90)
-    iss_map.addshape("iss.gif")
-    cursor = turtle.Turtle()
-    cursor.shape("iss.gif")
-    cursor.goto(float(lng), float(lat))
-    iss_map.exitonclick()
+    lat, lon = get_iss_location()
+    m = turtle.Screen()
+    m.setup(720, 360)
+    m.setworldcoordinates(-180, -90, 180, 90)
+    m.bgpic("map.gif")
 
+    m.addshape("iss.gif")
+    t = turtle.Turtle()
+    t.shape("iss.gif")
+    t.setheading(90)
 
-def get_iss_passover():
-    pass
+    t.penup()
+    t.goto(float(lon), float(lat))
+
+    # Indianapolis, Indiana
+    lat = 39.7684
+    lon = -86.1581
+
+    indy = turtle.Turtle()
+    indy.penup()
+    indy.color('yellow')
+    indy.goto(lon, lat)
+    indy.dot(5)
+    indy.hideturtle()
+
+    url = "http://api.open-notify.org/iss-pass.json"
+    url = url + "?lat=" + str(lat) + "&lon=" + str(lon)
+    req = requests.get(url).json()
+    # print(req)
+
+    passtime = req['response'][1]['risetime']
+    # print(passtime)
+
+    style = ('Arial', 10, 'bold')
+    indy.write(time.ctime(passtime), font=style)
+    m.exitonclick()
 
 
 def main():
     get_iss_people()
     get_iss_location()
     get_iss_position()
-    get_iss_passover()
 
 
 if __name__ == '__main__':
