@@ -7,6 +7,15 @@ import requests
 import time
 
 
+def iss_decorator(func):
+    def iss_wrapper():
+        print("*" * 40)
+        func()
+        print("*" * 40)
+    return iss_wrapper
+
+
+@iss_decorator
 def get_iss_people():
     link = requests.get('http://api.open-notify.org/astros.json').json()
     print(
@@ -15,21 +24,21 @@ def get_iss_people():
         print(f"{x['name']} is on board the {x['craft']}")
 
 
-def get_iss_location():
-    current_loc = []
-    location = requests.get(
-        'http://api.open-notify.org/iss-now.json').json()
-    latitude = location["iss_position"]["latitude"]
-    longitude = location["iss_position"]["longitude"]
-    timestamp = location["timestamp"]
-    print(
-        f'Current Position: {latitude}, {longitude}\nCurrent Time: {timestamp}')
-    current_loc.extend(location["iss_position"].values())
-    return current_loc
+response = requests.get('http://api.open-notify.org/iss-now.json').json()
+location = response["iss_position"]
+# print(response)
+lat = location["latitude"]
+lon = location["longitude"]
+stamp = time.ctime(response["timestamp"])
+print(
+    f'Current Latitude: {lat}\nCurrent Longitude: {lon}\nCurrent Time: {stamp}')
 
 
 def get_iss_position():
-    lat, lon = get_iss_location()
+    lat = float(location["latitude"])
+    lon = float(location["longitude"])
+
+    # print(lat, lon)
     m = turtle.Screen()
     m.setup(720, 360)
     m.setworldcoordinates(-180, -90, 180, 90)
@@ -38,19 +47,20 @@ def get_iss_position():
     m.addshape("iss.gif")
     t = turtle.Turtle()
     t.shape("iss.gif")
-    t.setheading(90)
+    t.setheading(45)
 
     t.penup()
-    t.goto(float(lon), float(lat))
+
+    t.goto(lon, lat)
 
     # Indianapolis, Indiana
-    lat = 39.7684
-    lon = -86.1581
+    ilat = 39.7684
+    ilon = -86.1581
 
     indy = turtle.Turtle()
     indy.penup()
     indy.color('yellow')
-    indy.goto(lon, lat)
+    indy.goto(ilon, ilat)
     indy.dot(5)
     indy.hideturtle()
 
@@ -69,7 +79,6 @@ def get_iss_position():
 
 def main():
     get_iss_people()
-    get_iss_location()
     get_iss_position()
 
 
